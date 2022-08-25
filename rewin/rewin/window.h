@@ -1,5 +1,5 @@
 #pragma once
-#include "area.h"
+#include "widget.h"
 #include <string>
 
 namespace rewin
@@ -20,7 +20,7 @@ namespace rewin
 		Defer
 	};
 
-	class Window : public Area
+	class Window : public Widget
 	{
 	public:
 		Window(

@@ -16,6 +16,7 @@ namespace rewin
 			if (uMsg == WM_CREATE)
 			{
 				Window* pWindow = (Window*)((LPCREATESTRUCT)lParam)->lpCreateParams;
+				pWindow->AdoptHandle(hWnd);
 				SetWindowLongPtr(hWnd, GWLP_USERDATA, (LONG_PTR)pWindow);
 			}
 
@@ -33,8 +34,17 @@ namespace rewin
 		const std::string& name,
 		WindowCreateMode mode
 	)
-		: Area{ pos, size }, mWindowClass{ windowClass }, mName{ name }
+		: Widget{ pos, size }, mWindowClass{ windowClass }, mName{ name }
 	{
+		OnEvent<WindowCreate>([this](const WindowCreate& event) {
+			int i = 1;
+
+			for (auto& pChild : mChildren)
+				pChild->Activate(this, i++);
+
+			return true;
+		});
+
 		if (mode == WindowCreateMode::Now)
 			Create();
 	}
@@ -62,7 +72,7 @@ namespace rewin
 		auto pos = mPos.GetCoords({});
 		auto size = mSize.GetCoords({});
 
-		mHandle = CreateWindowExA(0, pWndClassName, mName.c_str(), 0, (int)pos.x, (int)pos.y, (int)size.x, (int)size.y, nullptr, nullptr, hInstance, this);
+		CreateWindowExA(0, pWndClassName, mName.c_str(), 0, (int)pos.x, (int)pos.y, (int)size.x, (int)size.y, nullptr, nullptr, hInstance, this);
 	}
 
 	void Window::Show(bool show)

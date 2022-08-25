@@ -25,13 +25,30 @@ namespace rewin
 			: mValue{ value }, mAbsolute(false)
 		{}
 
-		lm::Vec2 GetCoords(const lm::Vec2& scale)
+		lm::Vec2 GetCoords(const lm::Vec2& scale) const
 		{
 			return mAbsolute ? mValue : mValue * scale;
 		}
 
+		const lm::Vec2& GetRaw() const { return mValue; }
+		bool IsAbsolute() const { return mAbsolute; }
+
 	private:
 		lm::Vec2 mValue;
 		bool mAbsolute;
+	};
+
+	enum class XAlign
+	{
+		Left,
+		Right,
+		Center,
+	};
+
+	enum class YAlign
+	{
+		Top,
+		Bottom,
+		Center
 	};
 }
