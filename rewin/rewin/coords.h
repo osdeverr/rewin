@@ -3,8 +3,8 @@
 
 namespace rewin
 {
-	inline static constexpr enum AbsoluteCoordTag {} Absolute{0};
-	inline static constexpr enum RelativeCoordTag {} Relative{0};
+	inline static constexpr enum class AbsoluteCoordTag { _ } Absolute = AbsoluteCoordTag::_;
+	inline static constexpr enum class RelativeCoordTag { _ } Relative = RelativeCoordTag::_;
 
 	class Coords
 	{

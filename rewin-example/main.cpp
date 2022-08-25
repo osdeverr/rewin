@@ -1,5 +1,8 @@
 #include <rewin/widget.h>
 #include <rewin/coords.h>
+#include <rewin/window.h>
+
+#include <rewin/wm_events.h>
 
 struct WindowCreated : rewin::Event<rewin::WindowMessageType::WindowCreated>
 {
@@ -8,11 +11,20 @@ struct WindowCreated : rewin::Event<rewin::WindowMessageType::WindowCreated>
 
 int main()
 {
-	rewin::Widget widget;
+	rewin::Window window(
+		rewin::WindowClass{ "rewin-example" },
+		{ 100, 200 }, { 1000, 500 },
+		"Rewin Example",
+		rewin::WindowCreateMode::Defer
+	);
 
-	rewin::Coords coord = { 5, 6, rewin::Relative };
-
-	widget.OnEvent<WindowCreated>([](const WindowCreated& event) {
-
+	window.OnEvent<rewin::WindowCreate>([](const rewin::WindowCreate& event) {
+		printf("Window '%s' Created\n", event.pWindow->GetName().c_str());
 	});
+
+	window.Create();
+	window.Show();
+
+	while (window.Update())
+		;
 }

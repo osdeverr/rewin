@@ -8,11 +8,7 @@
 
 namespace rewin
 {
-	enum WindowHandle : uintptr_t {
-		Invalid = -1
-	};
-
-	typedef uintptr_t WindowParam;
+	typedef void* WindowHandle;
 
 	typedef std::function<void(WindowParam w, WindowParam l)> WindowMessageHandler;
 
@@ -28,14 +24,21 @@ namespace rewin
 		{
 			mMsgHandlers[T::MessageType].Add([this, handler](WindowParam w, WindowParam l)
 			{
-				handler(H{w, l});
+				handler(T{w, l});
 			});
 		}
 
-		void InternalHandleEvent(WindowMessageType type, WindowParam w, WindowParam l)
+		bool InternalHandleEvent(WindowMessageType type, WindowParam w, WindowParam l)
 		{
+			bool handled = false;
+
 			for (auto& handler : mMsgHandlers[type])
+			{
 				handler(w, l);
+				handled = true;
+			}
+
+			return handled;
 		}
 
 		WindowHandle GetHandle() const
@@ -49,7 +52,7 @@ namespace rewin
 		}
 
 	protected:
-		WindowHandle mHandle = WindowHandle::Invalid;
+		WindowHandle mHandle = (WindowHandle) -1;
 		std::unordered_map<WindowMessageType, ulib::List<WindowMessageHandler>> mMsgHandlers;
 
 		virtual void Activate() {}

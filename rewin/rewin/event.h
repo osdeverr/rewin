@@ -8,9 +8,11 @@ namespace rewin
 		WindowCreated
 	};
 
-	template<WindowMessageType T>
+	typedef uintptr_t WindowParam;
+
+	template<auto T>
 	struct Event
 	{
-		static inline constexpr auto MessageType = T;
+		static inline constexpr auto MessageType = (WindowMessageType) T;
 	};
 }
