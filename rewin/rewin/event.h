@@ -3,7 +3,7 @@
 
 namespace rewin
 {
-	enum WindowMessageType : uint32_t
+	enum class WindowMessageType : uint32_t
 	{
 		WindowCreated
 	};

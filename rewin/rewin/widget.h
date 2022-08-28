@@ -7,6 +7,8 @@
 #include "event.h"
 #include "coords.h"
 
+#include "font.h"
+
 namespace rewin
 {
 	typedef void* WindowHandle;
@@ -46,18 +48,7 @@ namespace rewin
 			});
 		}
 
-		bool InternalHandleEvent(WindowMessageType type, WindowParam w, WindowParam l)
-		{
-			bool handled = false;
-
-			for (auto& handler : mMsgHandlers[type])
-				handled |= handler(w, l);
-
-			for (auto& pChild : mChildren)
-				handled |= pChild->InternalHandleEvent(type, w, l);
-
-			return handled;
-		}
+		bool InternalHandleEvent(WindowMessageType type, WindowParam w, WindowParam l);
 
 		WindowHandle GetHandle() const
 		{
@@ -73,34 +64,22 @@ namespace rewin
 		T* Add(const T& widget)
 		{
 			T* pWidget = new T(widget);
-			pWidget->mParent = this;
 			mChildren.Add(pWidget);
 
 			if(mHandle)
-				pWidget->Activate(this, 100u + mChildren.Size());
+				pWidget->InternalActivate(this, int(100u + mChildren.Size()));
 
 			return pWidget;
 		}
 
-		lm::Vec2 GetAbsolutePos(const lm::Vec2& localPos)
-		{
-			lm::Vec2 result = localPos;
+		lm::Vec2 GetAbsolutePos(const lm::Vec2& localPos) const;
 
-			Widget* pCurr = this;
-
-			while (pCurr)
-			{
-				result += pCurr->mPos.GetCoords(pCurr->mSize.GetCoords(pCurr->GetParentSize()));
-				pCurr = pCurr->mParent;
-			};
-		}
-
-		lm::Vec2 GetSize()
+		lm::Vec2 GetSize() const
 		{
 			return mSize.GetCoords(GetParentSize());
 		}
 
-		lm::Vec2 GetParentSize()
+		lm::Vec2 GetParentSize() const
 		{
 			return mParent ? mParent->mSize.GetCoords(mParent->GetParentSize()) : lm::Vec2{ 1, 1 };
 		}
@@ -115,14 +94,22 @@ namespace rewin
 		}
 
 		virtual void Activate(Widget* pParent, int id) {}
+		virtual void RecalculateSize() {}
+
+		void SendWindowMessage(WindowMessageType type, WindowParam w, WindowParam l);
+		void SetFont(FontHandle handle);
 
 	protected:
 		WindowHandle mHandle = (WindowHandle)0;
 		std::unordered_map<WindowMessageType, ulib::List<WindowMessageHandler>> mMsgHandlers;
 
+		FontHandle mFont = (FontHandle)0;
+
 		Widget* mParent = nullptr;
 		Coords mPos, mSize;
 
 		ulib::List<Widget*> mChildren;
+
+		void InternalActivate(Widget* pParent, int id);
 	};
 }

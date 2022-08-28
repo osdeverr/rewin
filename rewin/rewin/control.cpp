@@ -10,7 +10,8 @@ namespace rewin
 		uint32_t style
 	)
 		: Widget{ pos, size }, mClassId{ classId }, mStyle{ style }
-	{}
+	{
+	}
 
 	void Control::Activate(Widget* pParent, int id)
 	{
@@ -32,6 +33,17 @@ namespace rewin
 			(HINSTANCE)GetWindowLongPtr(parent, GWLP_HINSTANCE),
 			nullptr
 		);
+	}
+
+	void Control::RecalculateSize()
+	{
+		if (mHandle)
+		{
+			auto size = mSize.GetCoords(mParent->GetSize());
+			auto pos = mPos.GetCoords(mParent->GetSize());
+
+			MoveWindow((HWND)mHandle, (int)pos.x, (int)pos.y, (int)size.x, (int)size.y, TRUE);
+		}
 	}
 
 	void Control::SetText(const std::string& text)

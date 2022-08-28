@@ -3,6 +3,21 @@
 
 namespace rewin
 {
+	enum ControlFlags
+	{
+		ControlFlags_Adjustable = 1 << 0,
+		ControlFlags_StickToBottom = 1 << 1,
+		ControlFlags_StickToLeft = 1 << 2,
+		ControlFlags_NoDivider = 1 << 3,
+		ControlFlags_NoMoveX = 1 << 4,
+		ControlFlags_NoMoveY = 1 << 5,
+		ControlFlags_NoParentAlign = 1 << 6,
+		ControlFlags_NoResize = 1 << 7,
+		ControlFlags_StickToRight = 1 << 8,
+		ControlFlags_StickToTop = 1 << 9,
+		ControlFlags_Vertical = 1 << 10
+	};
+
 	class Control : public Widget
 	{
 	public:
@@ -13,6 +28,7 @@ namespace rewin
 		);
 
 		virtual void Activate(Widget* pParent, int id) override;
+		virtual void RecalculateSize() override;
 
 		int GetControlId() const { return mControlId; }
 

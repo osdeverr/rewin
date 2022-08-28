@@ -18,17 +18,15 @@ int main()
 		rewin::WindowCreateMode::Defer
 	);
 
-	window.OnEvent<rewin::WindowCreate>([&window](const rewin::WindowCreate&) {
-		HFONT hFont = CreateFont(13, 0, 0, 0, FW_DONTCARE, FALSE, FALSE, FALSE, ANSI_CHARSET,
-			OUT_TT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY,
-			DEFAULT_PITCH | FF_DONTCARE, TEXT("Tahoma"));
+	HFONT fontTahomaNormal = CreateFont(13, 0, 0, 0, FW_DONTCARE, FALSE, FALSE, FALSE, ANSI_CHARSET,
+		OUT_TT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY,
+		DEFAULT_PITCH | FF_DONTCARE, TEXT("Tahoma"));
 
-		window.ApplyForAll([hFont](rewin::Widget* pWidget) {
-			SendMessage((HWND)pWidget->GetHandle(), WM_SETFONT, (WPARAM)hFont, TRUE);
-		});
+	HFONT fontTahomaBig = CreateFont(13, 0, 0, 0, FW_BOLD, FALSE, FALSE, FALSE, ANSI_CHARSET,
+		OUT_TT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY,
+		FW_BOLD, TEXT("Tahoma"));
 
-		return true;
-	});
+	window.SetFont(fontTahomaNormal);
 
 	window.Add(rewin::StaticControl(
 		{ 0.f, 0.f, rewin::Relative },
@@ -41,7 +39,7 @@ int main()
 		{ 1.f, 0.1f, rewin::Relative },
 		"Test Rewin App",
 		rewin::XAlign::Center
-	));
+	))->SetFont(fontTahomaBig);
 
 	{
 		int i = 0;

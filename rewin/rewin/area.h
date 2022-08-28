@@ -1,7 +1,10 @@
 #pragma once
-#include "widget.h"
+#include "static_control.h"
 
 namespace rewin
 {
-	typedef Widget Area;
+	class Area : public StaticControl
+	{
+
+	};
 }
