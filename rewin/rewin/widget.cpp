@@ -32,9 +32,9 @@ namespace rewin
 		return result;
 	}
 
-	void Widget::SendWindowMessage(WindowMessageType type, WindowParam w, WindowParam l)
+	uintptr_t Widget::SendWindowMessage(WindowMessageType type, WindowParam w, WindowParam l)
 	{
-		SendMessage((HWND) mHandle, (UINT) type, w, l);
+		return SendMessage((HWND) mHandle, (UINT) type, w, l);
 	}
 
 	void Widget::SetFont(FontHandle handle)

@@ -60,6 +60,16 @@ namespace rewin
 			mHandle = handle;
 		}
 
+		Widget* Add(Widget* pWidget)
+		{
+			mChildren.Add(pWidget);
+
+			if (mHandle)
+				pWidget->InternalActivate(this, int(100u + mChildren.Size()));
+
+			return pWidget;
+		}
+
 		template<class T>
 		T* Add(const T& widget)
 		{
@@ -73,6 +83,11 @@ namespace rewin
 		}
 
 		lm::Vec2 GetAbsolutePos(const lm::Vec2& localPos) const;
+
+		lm::Vec2 GetPos() const
+		{
+			return mPos.GetCoords(GetParentSize());
+		}
 
 		lm::Vec2 GetSize() const
 		{
@@ -96,7 +111,7 @@ namespace rewin
 		virtual void Activate(Widget* pParent, int id) {}
 		virtual void RecalculateSize() {}
 
-		void SendWindowMessage(WindowMessageType type, WindowParam w, WindowParam l);
+		uintptr_t SendWindowMessage(WindowMessageType type, WindowParam w, WindowParam l);
 		void SetFont(FontHandle handle);
 
 	protected:

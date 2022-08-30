@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<Window id="GameLauncher" size="1366, 768">
+  <Area id="MainArea" size="1.0,1.0r" fontFamily="Tahoma" fontSize="13">
+    <Label pos="0.5,0.1r" size="1.0,0.1r" originCenter="true" fontFamily="Tahoma" fontSize="35" fontWeight="bold">
+      Game Launcher
+    </Label>
+
+    <TextBox id="NameInput" pos="0.5,0.5r" size="500,30" originCenter="true" />
+
+    <Button id="RunGameButton" pos="0.5, 0.75r" size="300,50" originCenter="true">
+      Run Game
+    </Button>
+  </Area>
+</Window>

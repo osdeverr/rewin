@@ -44,7 +44,10 @@ namespace rewin
 	template<auto T, auto NC>
 	struct ControlEvent : Event<T>
 	{
-		static bool ShouldProcess(Widget* widget, WindowParam w, WindowParam) { return (w & 0xFFFF) == ((Control*)widget)->GetControlId() && ((w & 0xFFFF0000) >> 16) == NC; }
+		static bool ShouldProcess(Widget* widget, WindowParam w, WindowParam)
+		{
+			return (w & 0xFFFF) == ((Control*)widget)->GetControlId() && ((w & 0xFFFF0000) >> 16) == NC;
+		}
 
 		ControlEvent()
 		{}
