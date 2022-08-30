@@ -4,6 +4,8 @@
 
 #include <ulib/list.h>
 
+#include <sstream>
+
 #include "event.h"
 #include "coords.h"
 
@@ -86,7 +88,7 @@ namespace rewin
 
 		lm::Vec2 GetPos() const
 		{
-			return mPos.GetCoords(GetParentSize());
+			return mPos.GetAnchoredCoords(GetParentSize(), GetSize());
 		}
 
 		lm::Vec2 GetSize() const
@@ -97,6 +99,18 @@ namespace rewin
 		lm::Vec2 GetParentSize() const
 		{
 			return mParent ? mParent->mSize.GetCoords(mParent->GetParentSize()) : lm::Vec2{ 1, 1 };
+		}
+
+		void SetPos(const Coords& pos)
+		{
+			mPos = pos;
+			RecalculateSize();
+		}
+
+		void SetSize(const Coords& size)
+		{
+			mSize = size;
+			RecalculateSize();
 		}
 
 		template<class F>
@@ -114,6 +128,30 @@ namespace rewin
 		uintptr_t SendWindowMessage(WindowMessageType type, WindowParam w, WindowParam l);
 		void SetFont(FontHandle handle);
 
+		const std::string& GetStringId() const { return mStringId; }
+		void SetStringId(const std::string& id) { mStringId = id; }
+
+		template<class T>
+		T* FindChild(const std::string& path)
+		{
+			std::istringstream iss(path);
+			std::vector<std::string> tokens;
+			std::string token;
+			while (std::getline(iss, token, '.')) {
+				if (!token.empty())
+					tokens.push_back(token);
+			}
+
+			return (T*)FindChild(tokens);
+		}
+
+		Widget* FindChild(const std::vector<std::string>& path, int skip = 0);
+
+		void SetEnabled(bool enabled);
+
+		ulib::List<Widget*>& GetChildren() { return mChildren; }
+		void KillChildren();
+
 	protected:
 		WindowHandle mHandle = (WindowHandle)0;
 		std::unordered_map<WindowMessageType, ulib::List<WindowMessageHandler>> mMsgHandlers;
@@ -123,7 +161,11 @@ namespace rewin
 		Widget* mParent = nullptr;
 		Coords mPos, mSize;
 
+		std::string mStringId;
+
 		ulib::List<Widget*> mChildren;
+
+		bool mEnabled = true;
 
 		void InternalActivate(Widget* pParent, int id);
 	};

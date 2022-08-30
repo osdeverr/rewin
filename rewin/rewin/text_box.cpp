@@ -9,6 +9,10 @@ namespace rewin
 		{
 			auto result = 0;
 
+			result |= ES_AUTOHSCROLL;
+			result |= WS_BORDER;
+			// result |= ES_NOHIDESEL;
+
 			// TODO
 
 			return result;

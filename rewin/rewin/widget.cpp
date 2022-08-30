@@ -60,6 +60,7 @@ namespace rewin
 			mFont = mParent->mFont;
 
 		Activate(mParent, id);
+		SetEnabled(mEnabled);
 
 		int i = 1;
 
@@ -73,5 +74,36 @@ namespace rewin
 					pWidget->SendWindowMessage((WindowMessageType)WM_SETFONT, (WindowParam)pWidget->mFont, true);
 			});
 		}
+	}
+
+	Widget* Widget::FindChild(const std::vector<std::string>& path, int skip)
+	{
+		if (skip >= path.size())
+			return nullptr;
+
+		for (auto& pChild : mChildren)
+			if (pChild->mStringId == path[skip])
+				if (skip == path.size() - 1)
+					return pChild;
+				else
+					return pChild->FindChild(path, skip + 1);
+
+		return nullptr;
+	}
+
+	void Widget::SetEnabled(bool enabled)
+	{
+		if (mHandle)
+			EnableWindow((HWND)mHandle, enabled);
+
+		mEnabled = enabled;
+	}
+
+	void Widget::KillChildren()
+	{
+		for (auto& pChild : mChildren)
+			delete pChild;
+
+		mChildren.Clear();
 	}
 }

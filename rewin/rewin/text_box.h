@@ -1,6 +1,8 @@
 #pragma once
 #include "control.h"
 
+#include <Windows.h>
+
 namespace rewin
 {
 	enum TextBoxFlags
@@ -19,4 +21,6 @@ namespace rewin
 
 		std::string GetText();
 	};
+
+	typedef ControlEvent<WM_COMMAND, EN_CHANGE> TextBoxContentChanged;
 }

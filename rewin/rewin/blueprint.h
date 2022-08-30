@@ -19,12 +19,14 @@ namespace rewin
 			: id{ "" }, pWidget{ new T(widget) }
 		{
 			cloneFunction = [](Widget* pWidget) { return new T(*(T*)pWidget); };
+			pWidget->SetStringId(id);
 		}
 
 		template<class T>
 		BlueprintEntry(const T& widget, std::initializer_list<BlueprintEntry> children)
 		{
 			cloneFunction = [](Widget* pWidget) { return new T(*(T*)pWidget); };
+			pWidget->SetStringId(id);
 		}
 
 		template<class T>
@@ -32,6 +34,7 @@ namespace rewin
 			: id{ id }, pWidget{ new T(widget) }
 		{
 			cloneFunction = [](Widget* pWidget) { return new T(*(T*)pWidget); };
+			pWidget->SetStringId(id);
 		}
 
 		template<class T>
@@ -39,9 +42,12 @@ namespace rewin
 			: id{ id }, pWidget{ new T(widget) }, children{ children }
 		{
 			cloneFunction = [](Widget* pWidget) { return new T(*(T*)pWidget); };
+			pWidget->SetStringId(id);
 		}
 
 		Widget* Create() const;
+
+		BlueprintEntry* FindChild(const std::vector<std::string>& path, int skip = 0);
 
 		BlueprintEntry(const BlueprintEntry& other)
 		{
@@ -65,6 +71,23 @@ namespace rewin
 		{}
 
 		void LoadTo(Widget* pWidget);
+
+		template<class T>
+		T* FindWidget(const std::string& path)
+		{
+			std::istringstream iss(path);
+			std::vector<std::string> tokens;
+			std::string token;
+			while (std::getline(iss, token, '.')) {
+				if (!token.empty())
+					tokens.push_back(token);
+			}
+
+			return (T*)FindWidget(tokens);
+		}
+
+
+		Widget* FindWidget(const std::vector<std::string>& path);
 
 	private:
 		std::vector<BlueprintEntry> mChildren;

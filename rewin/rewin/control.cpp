@@ -18,7 +18,7 @@ namespace rewin
 		mControlId = id;
 
 		auto size = mSize.GetCoords(pParent->GetSize());
-		auto pos = mPos.GetCoords(pParent->GetSize());
+		auto pos = mPos.GetAnchoredCoords(pParent->GetSize(), size);
 
 		auto parent = (HWND)pParent->GetHandle();
 
@@ -40,7 +40,7 @@ namespace rewin
 		if (mHandle)
 		{
 			auto size = mSize.GetCoords(mParent->GetSize());
-			auto pos = mPos.GetCoords(mParent->GetSize());
+			auto pos = mPos.GetAnchoredCoords(mParent->GetSize(), size);
 
 			MoveWindow((HWND)mHandle, (int)pos.x, (int)pos.y, (int)size.x, (int)size.y, TRUE);
 		}
