@@ -23,45 +23,16 @@ void PrintKy(rewin::Widget& widget, int tab = 0)
 	for (auto i = 0; i < tab; i++)
 		printf("\t");
 
-	printf("- '%s' @ %p\n", widget.GetStringId().c_str(), &widget);
+	auto pos = widget.GetPos(), size = widget.GetSize();
+
+	printf("- '%s' @ %p [%f, %f]-[%f, %f]\n", widget.GetStringId().c_str(), &widget, pos.x, pos.y, size.x, size.y);
 
 	for (auto& child : widget.GetChildren())
 		PrintKy(*child, tab + 1);
 }
 
-int main()
+namespace
 {
-	INITCOMMONCONTROLSEX commctrl;
-	commctrl.dwSize = sizeof commctrl;
-	commctrl.dwICC = 0xFFFFFFFF;
-
-	InitCommonControlsEx(&commctrl);
-
-	rewin::Window window(
-		rewin::WindowClass{ "rewin-example" },
-		{ 100, 200 }, { 500, 350 },
-		"Rewin Example",
-		rewin::WindowCreateMode::Defer
-	);
-
-	HFONT fontTahomaNormal = CreateFont(13, 0, 0, 0, FW_DONTCARE, FALSE, FALSE, FALSE, ANSI_CHARSET,
-		OUT_TT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY,
-		DEFAULT_PITCH | FF_DONTCARE, TEXT("Tahoma"));
-
-	HFONT fontTahomaBold = CreateFont(13, 0, 0, 0, FW_BOLD, FALSE, FALSE, FALSE, ANSI_CHARSET,
-		OUT_TT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY,
-		FW_BOLD, TEXT("Tahoma"));
-
-	HFONT fontTahomaBig = CreateFont(36, 0, 0, 0, FW_BOLD, FALSE, FALSE, FALSE, ANSI_CHARSET,
-		OUT_TT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY,
-		FW_BOLD, TEXT("PF DinDisplay Pro"));
-
-	HFONT fontTahomaItalics = CreateFont(13, 0, 0, 0, FW_DONTCARE, TRUE, FALSE, FALSE, ANSI_CHARSET,
-		OUT_TT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY,
-		DEFAULT_PITCH | FF_DONTCARE, TEXT("Tahoma"));
-
-	window.SetFont(fontTahomaNormal);
-
 	rewin::Blueprint testWindowContents{
 		{
 			"MainArea",
@@ -114,17 +85,118 @@ int main()
 						{100, 40},
 						"Run PlakMP"
 					)
-				}
+				},
 			}
 		}
 	};
 
-	testWindowContents.FindWidget<rewin::Label>("MainArea.WelcomeLabel")->SetFont(fontTahomaBig);
+	rewin::Blueprint gPlakGraphicsClientWindow{
+		{
+			"MainArea",
+			rewin::StaticControl(
+				{ 0.f, 0.f, rewin::Relative },
+				{ 1.f, 1.f, rewin::Relative },
+				"", SS_CENTER
+			),
+			{
+				rewin::BlueprintEntry{
+					"PlakGraphicsLabel",
+					rewin::Label(
+						{ 0.5f, 0.2f, rewin::Relative, rewin::CoordAnchor::Center },
+						{ 1.f, 0.2f, rewin::Relative },
+						"Plak Graphics",
+						rewin::XAlign::Center
+					)
+				},
+				rewin::BlueprintEntry{
+					"LoadingArea",
+					rewin::StaticControl(
+						{ 0.f, 0.3f, rewin::Relative },
+						{ 1.f, 1.f, rewin::Relative },
+						"", SS_GRAYFRAME
+					),
+					{
+						{
+							"LoadingLabel",
+							rewin::Label(
+								{0.5f, 0.6f, rewin::Relative, rewin::CoordAnchor::Center},
+								{1.f, 0.3f, rewin::Relative},
+								"Loading content...",
+								rewin::XAlign::Center
+							)
+						},
+						{
+							"ErrorLabel",
+							rewin::Label(
+								{0.5f, 0.7f, rewin::Relative, rewin::CoordAnchor::Center},
+								{1.f, 0.3f, rewin::Relative},
+								"Error loading content: Network request failed\nPlak Graphics may be unavailable at this time. Try again later.",
+								rewin::XAlign::Center
+							)
+						},
+						{
+							"CancelButton",
+							rewin::Button(
+								{0.5f, 0.8f, rewin::Relative, rewin::CoordAnchor::Center},
+								{100, 30},
+								"Quit"
+							)
+						}
+					}
+				}
+			}
+		}
+	};
+}
+
+int main()
+{
+	INITCOMMONCONTROLSEX commctrl;
+	commctrl.dwSize = sizeof commctrl;
+	commctrl.dwICC = 0xFFFFFFFF;
+
+	InitCommonControlsEx(&commctrl);
+
+	rewin::Window window(
+		rewin::WindowClass{ "rewin-example" },
+		{ 100, 200 }, { 500, 350 },
+		"Rewin Example",
+		rewin::WindowCreateMode::Defer
+	);
+
+	HFONT fontTahomaNormal = CreateFont(13, 0, 0, 0, FW_DONTCARE, FALSE, FALSE, FALSE, ANSI_CHARSET,
+		OUT_TT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY,
+		DEFAULT_PITCH | FF_DONTCARE, TEXT("Tahoma"));
+
+	HFONT fontTahomaBold = CreateFont(13, 0, 0, 0, FW_BOLD, FALSE, FALSE, FALSE, ANSI_CHARSET,
+		OUT_TT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY,
+		FW_BOLD, TEXT("Tahoma"));
+
+	HFONT fontPlakBig = CreateFont(36, 0, 0, 0, FW_BOLD, FALSE, FALSE, FALSE, ANSI_CHARSET,
+		OUT_TT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY,
+		FW_BOLD, TEXT("PF DinDisplay Pro"));
+
+	HFONT fontTahomaItalics = CreateFont(13, 0, 0, 0, FW_DONTCARE, TRUE, FALSE, FALSE, ANSI_CHARSET,
+		OUT_TT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY,
+		DEFAULT_PITCH | FF_DONTCARE, TEXT("Tahoma"));
+
+	window.SetFont(fontTahomaNormal);
+
+	testWindowContents.FindWidget<rewin::Label>("MainArea.WelcomeLabel")->SetFont(fontPlakBig);
 	testWindowContents.FindWidget<rewin::Label>("MainArea.NameInputHint")->SetFont(fontTahomaBold);
 
 	// testWindowContents.FindWidget<rewin::Label>("MainArea.NameInputRules")->SetFont(fontTahomaItalics);
 	testWindowContents.FindWidget<rewin::Label>("MainArea.NameInputRules")->SetEnabled(false);
 
+	gPlakGraphicsClientWindow.FindWidget<rewin::Label>("MainArea.PlakGraphicsLabel")->SetFont(fontPlakBig);
+	gPlakGraphicsClientWindow.FindWidget<rewin::Label>("MainArea.LoadingArea.LoadingLabel")->SetFont(fontTahomaBold);
+
+	// gPlakGraphicsClientWindow.LoadTo(&window);
+
+	rewin::Blueprint::LoadFromXML("D:/rewin/rewin-example/GameLauncher.xml").LoadTo(&window);
+	PrintKy(window, 0);
+
+	/*
 	testWindowContents.LoadTo(&window);
 
 	int tab = 0;
@@ -152,6 +224,7 @@ int main()
 
 		return true;
 	});
+	*/
 
 	/*
 	window.Add(rewin::StaticControl(

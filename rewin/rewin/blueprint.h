@@ -30,6 +30,13 @@ namespace rewin
 		}
 
 		template<class T>
+		BlueprintEntry(const T& widget, const std::vector<BlueprintEntry>& children)
+		{
+			pWidget->SetStringId(id);
+			cloneFunction = [](Widget* pWidget) { return new T(*(T*)pWidget); };
+		}
+
+		template<class T>
 		BlueprintEntry(const std::string& id, const T& widget)
 			: id{ id }, pWidget{ new T(widget) }
 		{
@@ -39,6 +46,14 @@ namespace rewin
 
 		template<class T>
 		BlueprintEntry(const std::string& id, const T& widget, std::initializer_list<BlueprintEntry> children)
+			: id{ id }, pWidget{ new T(widget) }, children{ children }
+		{
+			pWidget->SetStringId(id);
+			cloneFunction = [](Widget* pWidget) { return new T(*(T*)pWidget); };
+		}
+
+		template<class T>
+		BlueprintEntry(const std::string& id, const T& widget, const std::vector<BlueprintEntry>& children)
 			: id{ id }, pWidget{ new T(widget) }, children{ children }
 		{
 			pWidget->SetStringId(id);
@@ -70,6 +85,12 @@ namespace rewin
 			: mChildren{ children }
 		{}
 
+		//Blueprint(const std::vector<BlueprintEntry>& children)
+		//	: mChildren{ children }
+		//{}
+		
+		static Blueprint LoadFromXML(const std::string& path);
+
 		void LoadTo(Widget* pWidget);
 
 		template<class T>
@@ -86,8 +107,13 @@ namespace rewin
 			return (T*)FindWidget(tokens);
 		}
 
-
 		Widget* FindWidget(const std::vector<std::string>& path);
+
+		template<class T>
+		T* CreateSingular()
+		{
+			return (T*)mChildren.front().Create();
+		}
 
 	private:
 		std::vector<BlueprintEntry> mChildren;
