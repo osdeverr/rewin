@@ -20,7 +20,7 @@ namespace rewin
 		auto size = mSize.GetCoords(pParent->GetSize());
 		auto pos = mPos.GetAnchoredCoords(pParent->GetSize(), size);
 
-		auto parent = (HWND)pParent->GetHandle();
+		auto root = (HWND)mRoot->GetHandle();
 
 		mHandle = CreateWindowA(
 			mClassId.c_str(),
@@ -28,9 +28,9 @@ namespace rewin
 			mStyle,
 			(int)pos.x, (int)pos.y,
 			(int)size.x, (int)size.y,
-			parent,
+			root,
 			(HMENU)mControlId,
-			(HINSTANCE)GetWindowLongPtr(parent, GWLP_HINSTANCE),
+			(HINSTANCE)GetWindowLongPtr(root, GWLP_HINSTANCE),
 			nullptr
 		);
 	}

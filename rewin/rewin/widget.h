@@ -64,6 +64,9 @@ namespace rewin
 
 		Widget* Add(Widget* pWidget)
 		{
+			pWidget->mParent = this;
+			pWidget->mRoot = this->mRoot;
+
 			mChildren.Add(pWidget);
 
 			if (mHandle)
@@ -76,6 +79,10 @@ namespace rewin
 		T* Add(const T& widget)
 		{
 			T* pWidget = new T(widget);
+
+			pWidget->mParent = this;
+			pWidget->mRoot = this->mRoot;
+
 			mChildren.Add(pWidget);
 
 			if(mHandle)
@@ -160,6 +167,8 @@ namespace rewin
 
 		Widget* mParent = nullptr;
 		Coords mPos, mSize;
+
+		Widget* mRoot = nullptr;
 
 		std::string mStringId;
 

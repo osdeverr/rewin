@@ -133,10 +133,16 @@ int main()
 
 	auto pNameInput = window.FindChild<rewin::TextBox>("MainArea.NameInput");
 	auto pRunButton = window.FindChild<rewin::Button>("MainArea.RunButton");
+	auto pInputRules = window.FindChild<rewin::Label>("MainArea.NameInputRules");
 
-	pNameInput->OnEvent<rewin::TextBoxContentChanged>([pNameInput, pRunButton](const rewin::TextBoxContentChanged&) {
+	pNameInput->OnEvent<rewin::TextBoxContentChanged>([pNameInput, pRunButton, pInputRules, fontTahomaBold, fontTahomaNormal](const rewin::TextBoxContentChanged&) {
 		auto size = pNameInput->GetText().size();
-		pRunButton->SetEnabled(size > 3 && size < 32);
+		auto ok = size > 3 && size < 32;
+
+		pRunButton->SetEnabled(ok);
+
+		pInputRules->SetEnabled(!ok);
+		pInputRules->SetFont(ok ? fontTahomaNormal : fontTahomaBold);
 
 		return true;
 	});
@@ -146,9 +152,6 @@ int main()
 
 		return true;
 	});
-
-	pRunButton->SetEnabled(false);
-	window.FindChild<rewin::Label>("MainArea.NameInputRules")->SetEnabled(false);
 
 	/*
 	window.Add(rewin::StaticControl(

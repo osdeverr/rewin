@@ -18,31 +18,31 @@ namespace rewin
 		BlueprintEntry(const T& widget)
 			: id{ "" }, pWidget{ new T(widget) }
 		{
-			cloneFunction = [](Widget* pWidget) { return new T(*(T*)pWidget); };
 			pWidget->SetStringId(id);
+			cloneFunction = [](Widget* pWidget) { return new T(*(T*)pWidget); };
 		}
 
 		template<class T>
 		BlueprintEntry(const T& widget, std::initializer_list<BlueprintEntry> children)
 		{
-			cloneFunction = [](Widget* pWidget) { return new T(*(T*)pWidget); };
 			pWidget->SetStringId(id);
+			cloneFunction = [](Widget* pWidget) { return new T(*(T*)pWidget); };
 		}
 
 		template<class T>
 		BlueprintEntry(const std::string& id, const T& widget)
 			: id{ id }, pWidget{ new T(widget) }
 		{
-			cloneFunction = [](Widget* pWidget) { return new T(*(T*)pWidget); };
 			pWidget->SetStringId(id);
+			cloneFunction = [](Widget* pWidget) { return new T(*(T*)pWidget); };
 		}
 
 		template<class T>
 		BlueprintEntry(const std::string& id, const T& widget, std::initializer_list<BlueprintEntry> children)
 			: id{ id }, pWidget{ new T(widget) }, children{ children }
 		{
-			cloneFunction = [](Widget* pWidget) { return new T(*(T*)pWidget); };
 			pWidget->SetStringId(id);
+			cloneFunction = [](Widget* pWidget) { return new T(*(T*)pWidget); };
 		}
 
 		Widget* Create() const;

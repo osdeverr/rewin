@@ -39,10 +39,15 @@ namespace rewin
 
 	void Widget::SetFont(FontHandle handle)
 	{
+		if (mFont == handle)
+			return;
+
+		auto oldFont = mFont;
+
 		mFont = handle;
 
-		ApplyForAll([handle](rewin::Widget* pWidget) {
-			if (!pWidget->mFont)
+		ApplyForAll([handle, oldFont](rewin::Widget* pWidget) {
+			if (pWidget->mFont == oldFont)
 			{
 				pWidget->mFont = handle;
 
@@ -55,6 +60,9 @@ namespace rewin
 	void Widget::InternalActivate(Widget* pParent, int id)
 	{
 		mParent = pParent;
+
+		if (mParent && mParent->mRoot)
+			mRoot = mParent->mRoot;
 
 		if (mParent && !mFont)
 			mFont = mParent->mFont;

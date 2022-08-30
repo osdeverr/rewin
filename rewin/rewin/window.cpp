@@ -37,6 +37,8 @@ namespace rewin
 	)
 		: Widget{ pos, size }, mWindowClass{ windowClass }, mName{ name }, mFlags{ flags }
 	{
+		mRoot = this;
+
 		OnEvent<WindowResized>([this](const WindowResized& event) {
 			mSize = event.size;
 
