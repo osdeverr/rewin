@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<Area id="MainArea" pos="0,0r" size="1.0,1.0r" fontFamily="Tahoma" fontSize="13" bgArea="true">
+  <Label id="PlakGraphicsLabel" pos="0.5,0.2r" size="1,0.2r" anchor="center" xAlign="center" fontFamily="PF DinDisplay Pro" fontSize="36" fontWeight="700">
+    Plak Graphics
+  </Label>
+
+  <Area id="LoadingArea" pos="0,0.3r" size="1,1r" grayFrame="true">
+    <Label id="LoadingLabel" pos="0.5,0.6r" size="1,0.3r" anchor="center" xAlign="center">
+      Loading content...
+    </Label>
+
+    <Label id="ErrorLabel" pos="0.5,0.7r" size="1,0.3r" anchor="center" xAlign="center">
+      Error loading content: Network request failed
+      Plak Graphics may be unavailable at this time. Try again later.
+    </Label>
+
+    <Button id="CancelButton" pos="0.5,0.8r" size="100,30" anchor="center">
+      Quit
+    </Button>
+  </Area>
+</Area>

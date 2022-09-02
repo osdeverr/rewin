@@ -36,7 +36,7 @@ namespace rewin
 
 				if (wants)
 					return handler(T{ w, l });
-				
+
 				return wants;
 			});
 		}
@@ -44,7 +44,7 @@ namespace rewin
 		template<class T, class H>
 		void OnRawEvent(T type, const H& handler)
 		{
-			mMsgHandlers[(WindowMessageType) type].Add([this, handler](WindowParam w, WindowParam l)
+			mMsgHandlers[(WindowMessageType)type].Add([this, handler](WindowParam w, WindowParam l)
 			{
 				return handler(w, l);
 			});
@@ -85,7 +85,7 @@ namespace rewin
 
 			mChildren.Add(pWidget);
 
-			if(mHandle)
+			if (mHandle)
 				pWidget->InternalActivate(this, int(100u + mChildren.Size()));
 
 			return pWidget;
@@ -177,5 +177,54 @@ namespace rewin
 		bool mEnabled = true;
 
 		void InternalActivate(Widget* pParent, int id);
+	};
+
+
+	template<class T, class D>
+	class BaseWidgetBuilder : public T
+	{
+	public:
+		using T::T;
+
+		D& SetFont(FontHandle handle)
+		{
+			WBThis()->SetFont(handle);
+			return *(D*)this;
+		}
+
+		D& SetPos(const Coords& pos)
+		{
+			WBThis()->SetPos(pos);
+			return *(D*)this;
+		}
+
+		D& SetSize(const Coords& size)
+		{
+			WBThis()->SetSize(size);
+			return *(D*)this;
+		}
+
+		D& SetEnabled(bool enabled)
+		{
+			WBThis()->SetEnabled(enabled);
+			return *(D*)this;
+		}
+
+		D& SetStringId(const std::string& id)
+		{
+			WBThis()->SetStringId(id);
+			return *(D*)this;
+		}
+
+	protected:
+		T* WBThis() { return (T*)this; }
+	};
+
+	template<class T>
+	class WidgetBuilder : public BaseWidgetBuilder<T, WidgetBuilder<T>>
+	{
+	public:
+		using base_type = BaseWidgetBuilder<T, WidgetBuilder<T>>;
+		using base_type::base_type;
 	};
 }

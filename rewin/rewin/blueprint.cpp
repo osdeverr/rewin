@@ -62,6 +62,8 @@ namespace rewin
 				widget.SetFont(font);
 			}
 
+			widget.SetEnabled(node.attribute("enabled").as_bool(true) && !node.attribute("disabled").as_bool(false));
+
 			return widget;
 		}
 
@@ -159,6 +161,57 @@ namespace rewin
 			return Coords{ x, y, type };
 		}
 
+		void UtilReplaceAll(std::string& str, const std::string& from, const std::string& to) {
+			if (from.empty())
+				return;
+			size_t start_pos = 0;
+			while ((start_pos = str.find(from, start_pos)) != std::string::npos) {
+				str.replace(start_pos, from.length(), to);
+				start_pos += to.length(); // In case 'to' contains 'from', like replacing 'x' with 'yx'
+			}
+		}
+
+		void UtilReplaceWhitespace(std::string& str)
+		{
+			size_t start_pos = 0;
+			while ((start_pos = str.find('\n', start_pos)) != std::string::npos) {
+				auto begin = start_pos;
+				start_pos++;
+
+				if (start_pos > 1)
+					begin += 1;
+
+				while (start_pos < str.size() && str.at(start_pos) == ' ')
+					start_pos++;
+
+				auto end = start_pos;
+
+				str.replace(begin, end - begin, "");
+
+				start_pos = begin;
+			}
+		}
+
+		std::string LoadText(const pugi::xml_node& node)
+		{
+			std::string s = node.attribute("text").as_string(node.text().as_string());
+
+			UtilReplaceWhitespace(s);
+
+			UtilReplaceAll(s, "<br>", "\n");
+			UtilReplaceAll(s, "<br/>", "\n");
+			UtilReplaceAll(s, "<br />", "\n");
+
+			const auto strBegin = s.find_first_not_of(' ');
+			if (strBegin == std::string::npos)
+				return ""; // no content
+
+			const auto strEnd = s.find_last_not_of(' ');
+			const auto strRange = strEnd - strBegin + 1;
+
+			return s.substr(strBegin, strRange);
+		}
+
 		struct WindowXmlFactory : public IXmlFactory
 		{
 			virtual BlueprintEntry CreateBlueprintEntry(const pugi::xml_node& node)
@@ -178,6 +231,22 @@ namespace rewin
 
 		struct StaticControlXmlFactory : public IXmlFactory
 		{
+			DWORD LoadStaticControlFlags(const pugi::xml_node& node)
+			{
+				DWORD result = 0;
+
+				if (node.attribute("bgArea").as_bool(false))
+					result |= SS_CENTER;
+
+				if (node.attribute("grayRect").as_bool(false))
+					result |= SS_GRAYRECT;
+
+				if (node.attribute("grayFrame").as_bool(false))
+					result |= SS_GRAYFRAME;
+
+				return result;
+			}
+
 			virtual BlueprintEntry CreateBlueprintEntry(const pugi::xml_node& node)
 			{
 				return BlueprintEntry{
@@ -185,8 +254,8 @@ namespace rewin
 					LoadCommonWidgetData(StaticControl(
 						LoadPosition(node),
 						LoadSize(node),
-						node.attribute("text").as_string(node.text().as_string()),
-						SS_CENTER
+						LoadText(node),
+						LoadStaticControlFlags(node)
 					), node)
 				};
 			}
@@ -201,7 +270,7 @@ namespace rewin
 					LoadCommonWidgetData(Label(
 						LoadPosition(node),
 						LoadSize(node),
-						node.attribute("text").as_string(node.text().as_string()),
+						LoadText(node),
 						LoadXAlign(node)
 					), node)
 				};
@@ -217,7 +286,7 @@ namespace rewin
 					LoadCommonWidgetData(Button(
 						LoadPosition(node),
 						LoadSize(node),
-						node.attribute("text").as_string(node.text().as_string())
+						LoadText(node)
 					), node)
 				};
 			}
@@ -232,7 +301,7 @@ namespace rewin
 					LoadCommonWidgetData(TextBox(
 						LoadPosition(node),
 						LoadSize(node),
-						node.attribute("text").as_string(node.text().as_string()),
+						LoadText(node),
 						{}
 					), node)
 				};
