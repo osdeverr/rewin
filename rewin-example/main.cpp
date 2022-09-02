@@ -3,6 +3,7 @@
 #include <rewin/label.h>
 #include <rewin/image.h>
 #include <rewin/text_box.h>
+#include <rewin/list_box.h>
 
 #include <rewin/blueprint.h>
 
@@ -29,7 +30,7 @@ void PrintKy(rewin::Widget& widget, int tab = 0)
 
 	auto pos = widget.GetPos(), size = widget.GetSize();
 
-	printf("- '%s' @ %p [%f, %f]-[%f, %f]\n", widget.GetStringId().c_str(), &widget, pos.x, pos.y, size.x, size.y);
+	printf("- '%s' @ %p [%f, %f]-[%f, %f] visible=%s\n", widget.GetStringId().c_str(), &widget, pos.x, pos.y, size.x, size.y, widget.IsCurrentlyVisible() ? "true" : "false");
 
 	for (auto& child : widget.GetChildren())
 		PrintKy(*child, tab + 1);
@@ -179,7 +180,7 @@ int main()
 
 	rewin::Window window(
 		rewin::WindowClass{ "rewin-example" },
-		{ 100, 200 }, { 500, 350 },
+		{ 100, 200 }, { 500, 700 },
 		"Rewin Example",
 		rewin::WindowCreateMode::Defer
 	);
@@ -189,8 +190,6 @@ int main()
 
 	rewin::Blueprint::LoadFromXML("D:/rewin/rewin-example/PlakGraphicsConfigurator.xml").LoadTo(&window);
 	//gPlakGraphicsClientWindow.LoadTo(&window);
-
-	PrintKy(window, 0);
 
 	/*
 	testWindowContents.LoadTo(&window);
@@ -272,6 +271,11 @@ int main()
 
 	window.Create();
 	window.Show();
+
+	window.FindChild<rewin::ListBox>("MainArea.ContentArea.ConfigArea.EditionsList")->AddItem("Plak Graphics 3.0\t\t\tRealistic Edition");
+	window.FindChild<rewin::Button>("MainArea.ContentArea.ConfigArea.RunButton")->SetEnabled(false);
+
+	PrintKy(window, 0);
 
 	while (window.Update())
 		;

@@ -68,7 +68,9 @@ namespace rewin
 			mFont = mParent->mFont;
 
 		Activate(mParent, id);
+
 		SetEnabled(mEnabled);
+		SetVisible(mVisible);
 
 		int i = 1;
 
@@ -99,12 +101,36 @@ namespace rewin
 		return nullptr;
 	}
 
-	void Widget::SetEnabled(bool enabled)
+	void Widget::SetEnabled(bool enabled, bool permanent)
 	{
-		if (mHandle)
-			EnableWindow((HWND)mHandle, enabled);
+		if (permanent)
+			mEnabled = enabled;
 
-		mEnabled = enabled;
+		ApplyForAll([this, enabled](rewin::Widget* pWidget) {
+			pWidget->mRealEnabled = pWidget->mEnabled && this->mEnabled && this->mRealEnabled;
+
+			if (pWidget->mHandle)
+				EnableWindow((HWND)pWidget->mHandle, pWidget->mRealEnabled);
+
+			if (pWidget != this)
+				pWidget->SetEnabled(this->mEnabled, false);
+		});
+	}
+
+	void Widget::SetVisible(bool visible, bool permanent)
+	{
+		if (permanent)
+			mVisible = visible;
+
+		ApplyForAll([this, visible](rewin::Widget* pWidget) {
+			pWidget->mRealVisible = pWidget->mVisible && this->mVisible && this->mRealVisible;
+
+			if (pWidget->mHandle)
+				ShowWindow((HWND)pWidget->mHandle, pWidget->mRealVisible);
+
+			if (pWidget != this)
+				pWidget->SetVisible(pWidget->mRealVisible, false);
+		});
 	}
 
 	void Widget::KillChildren()

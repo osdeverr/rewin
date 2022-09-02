@@ -7,6 +7,7 @@
 #include "label.h"
 #include "button.h"
 #include "text_box.h"
+#include "list_box.h"
 
 #include <algorithm>
 
@@ -63,6 +64,10 @@ namespace rewin
 			}
 
 			widget.SetEnabled(node.attribute("enabled").as_bool(true) && !node.attribute("disabled").as_bool(false));
+
+			auto visible = node.attribute("visible").as_bool(true) && !node.attribute("visible").as_bool(false);
+			if(!visible)
+				widget.SetVisible(visible);
 
 			return widget;
 		}
@@ -308,13 +313,60 @@ namespace rewin
 			}
 		};
 
+		struct EmptyWidgetFactory : public IXmlFactory
+		{
+			virtual BlueprintEntry CreateBlueprintEntry(const pugi::xml_node& node)
+			{
+				return BlueprintEntry{
+					node.attribute("id").as_string(),
+					LoadCommonWidgetData(Widget(
+						LoadPosition(node),
+						LoadSize(node)
+					), node)
+				};
+			}
+		};
+
+		struct ListBoxFactory : public IXmlFactory
+		{
+			ListBoxFlags LoadListBoxFlags(const pugi::xml_node& node)
+			{
+				int result = ListBoxFlags_None;
+
+				if (node.attribute("strings").as_bool(false))
+					result |= ListBoxFlags_Strings;
+
+				if (node.attribute("tabStops").as_bool(false))
+					result |= ListBoxFlags_UseTabStops;
+
+				if (node.attribute("viewOnly").as_bool(false))
+					result |= ListBoxFlags_ViewOnly;
+
+				return (ListBoxFlags)result;
+			}
+
+			virtual BlueprintEntry CreateBlueprintEntry(const pugi::xml_node& node)
+			{
+				return BlueprintEntry{
+					node.attribute("id").as_string(),
+					LoadCommonWidgetData(ListBox(
+						LoadPosition(node),
+						LoadSize(node),
+						LoadListBoxFlags(node)
+					), node)
+				};
+			}
+		};
+
 		std::unordered_map<std::string, IXmlFactory*> sWidgetFactories = {
 			{"Window", new WindowXmlFactory()},
 			{"Static", new StaticControlXmlFactory()},
 			{"Area", new StaticControlXmlFactory()},
 			{"Label", new LabelXmlFactory()},
 			{"Button", new ButtonXmlFactory()},
-			{"TextBox", new TextBoxXmlFactory()}
+			{"TextBox", new TextBoxXmlFactory()},
+			{"Container", new EmptyWidgetFactory()},
+			{"ListBox", new ListBoxFactory()}
 		};
 	}
 

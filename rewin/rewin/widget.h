@@ -154,7 +154,11 @@ namespace rewin
 
 		Widget* FindChild(const std::vector<std::string>& path, int skip = 0);
 
-		void SetEnabled(bool enabled);
+		void SetEnabled(bool enabled, bool permanent = true);
+		void SetVisible(bool visible, bool permanent = true);
+
+		bool IsVisible() const { return mVisible; }
+		bool IsCurrentlyVisible() const { return mRealVisible; }
 
 		ulib::List<Widget*>& GetChildren() { return mChildren; }
 		void KillChildren();
@@ -175,6 +179,10 @@ namespace rewin
 		ulib::List<Widget*> mChildren;
 
 		bool mEnabled = true;
+		bool mVisible = true;
+
+		bool mRealEnabled = mEnabled;
+		bool mRealVisible = mVisible;
 
 		void InternalActivate(Widget* pParent, int id);
 	};
@@ -207,6 +215,12 @@ namespace rewin
 		D& SetEnabled(bool enabled)
 		{
 			WBThis()->SetEnabled(enabled);
+			return *(D*)this;
+		}
+
+		D& SetVisible(bool visible)
+		{
+			WBThis()->SetVisible(visible);
 			return *(D*)this;
 		}
 

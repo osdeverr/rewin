@@ -1,22 +1,49 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<Area id="MainArea" pos="0,0r" size="1.0,1.0r" fontFamily="Tahoma" fontSize="13" bgArea="true">
+<Area id="MainArea" pos="0,0r" size="1.0,1.0r" fontFamily="Tahoma" fontSize="16" bgArea="true">
   <Label id="PlakGraphicsLabel" pos="0.5,0.2r" size="1,0.2r" anchor="center" xAlign="center" fontFamily="PF DinDisplay Pro" fontSize="36" fontWeight="700">
     Plak Graphics
   </Label>
 
-  <Area id="LoadingArea" pos="0,0.3r" size="1,1r" grayFrame="true">
-    <Label id="LoadingLabel" pos="0.5,0.6r" size="1,0.3r" anchor="center" xAlign="center">
-      Loading content...
-    </Label>
+  <Label id="AccessKeyLabel" pos="0.5,0.21r" size="0.7,0.05r" anchor="center" xAlign="center" fontWeight="700">
+    Access Key: {}
+  </Label>
 
-    <Label id="ErrorLabel" pos="0.5,0.7r" size="1,0.3r" anchor="center" xAlign="center">
-      Error loading content: Network request failed
-      Plak Graphics may be unavailable at this time. Try again later.
-    </Label>
+  <Button id="AccessKeyCopyButton" pos="0.5,0.24r" size="0.2,0.04r" anchor="center" xAlign="center">
+    Copy
+  </Button>
 
-    <Button id="CancelButton" pos="0.5,0.8r" size="100,30" anchor="center">
-      Quit
-    </Button>
+  <Area id="ContentArea" pos="0,0.3r" size="1,1r" grayFrame="true">
+    <Container id="LoadingArea" pos="0,0r" size="1,1r" visible="false">
+      <Label id="LoadingLabel" pos="0.5,0.7r" size="1,0.3r" anchor="center" xAlign="center" fontSize="20">
+        Loading content...
+      </Label>
+
+      <Area id="ErrorArea" pos="0,0r" size="1,1r" visible="false">
+        <Label id="ErrorLabel" pos="0.5,0.7r" size="1,0.3r" anchor="center" xAlign="center">
+          Error loading content: {}
+          Plak Graphics may be unavailable at this time. Try again later.
+        </Label>
+
+        <Button id="CancelButton" pos="0.5,0.8r" size="100,30" anchor="center">
+          Quit
+        </Button>
+      </Area>
+    </Container>
+
+    <Container id="ConfigArea" pos="0,0r" size="1,1r">
+      <Label id="WelcomeLabel" pos="0.5,0.35r" size="1,0.3r" anchor="bottomCenter" xAlign="center" fontWeight="700" fontSize="18">
+        Content Configurator
+      </Label>
+      <Label id="WelcomeLabel" pos="0.5,0.4r" size="1,0.3r" anchor="bottomCenter" xAlign="center" fontWeight="500">
+        Pick one of the editions from the list to play with it!
+      </Label>
+
+      <ListBox id="EditionsList" pos="0.5,0.47r" size="0.8,0.4r" anchor="bottomCenter" tabStops="true" />
+
+      <Button id="RunButton" pos="0.5,0.9r" size="250,40" anchor="bottomCenter">
+         Select
+      </Button>
+    </Container>
   </Area>
 </Area>
