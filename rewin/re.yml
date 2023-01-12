@@ -1,0 +1,11 @@
+type: static-library
+name: .rewin
+
+platform.!windows: unsupported
+
+deps:
+  - .utility
+
+cxx-link-deps:
+  - User32.lib
+  - GDI32.LIB

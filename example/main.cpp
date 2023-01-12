@@ -188,8 +188,8 @@ int main()
 
 	window.SetFont(fontTahomaNormal);
 
-	rewin::Blueprint::LoadFromXML("D:/rewin/rewin-example/PlakGraphicsConfigurator.xml").LoadTo(&window);
-	//gPlakGraphicsClientWindow.LoadTo(&window);
+	// rewin::Blueprint::LoadFromXML("D:/rewin/rewin-example/PlakGraphicsConfigurator.xml").LoadTo(&window);
+	gPlakGraphicsClientWindow.LoadTo(&window);
 
 	/*
 	testWindowContents.LoadTo(&window);
@@ -272,8 +272,8 @@ int main()
 	window.Create();
 	window.Show();
 
-	window.FindChild<rewin::ListBox>("MainArea.ContentArea.ConfigArea.EditionsList")->AddItem("Plak Graphics 3.0\t\t\tRealistic Edition");
-	window.FindChild<rewin::Button>("MainArea.ContentArea.ConfigArea.RunButton")->SetEnabled(false);
+	// window.FindChild<rewin::ListBox>("MainArea.ContentArea.ConfigArea.EditionsList")->AddItem("Plak Graphics 3.0\t\t\tRealistic Edition");
+	// window.FindChild<rewin::Button>("MainArea.ContentArea.ConfigArea.RunButton")->SetEnabled(false);
 
 	PrintKy(window, 0);
 

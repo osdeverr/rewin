@@ -33,3 +33,7 @@
 
 out/
 .vs/
+
+.vscode/
+.re-cache/
+re.user.yml

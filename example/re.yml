@@ -1,0 +1,5 @@
+type: executable
+name: .example
+
+deps:
+  - .rewin

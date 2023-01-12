@@ -10,6 +10,7 @@
 #include "list_box.h"
 
 #include <algorithm>
+#include <cassert>
 
 namespace rewin
 {
@@ -48,7 +49,7 @@ namespace rewin
 		}
 
 		template<class T>
-		T& LoadCommonWidgetData(T& widget, const pugi::xml_node& node)
+		T LoadCommonWidgetData(T widget, const pugi::xml_node& node)
 		{
 			auto [fontFamily, fontFamilyFirst] = FindDescendableAttribute(node, "fontFamily");
 			auto [fontSize, fontSizeFirst] = FindDescendableAttribute(node, "fontSize");
