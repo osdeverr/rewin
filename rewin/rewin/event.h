@@ -3,20 +3,23 @@
 
 namespace rewin
 {
-	enum class WindowMessageType : uint32_t
-	{
-		WindowCreated
-	};
+    enum class WindowMessageType : uint32_t
+    {
+        WindowCreated
+    };
 
-	typedef uintptr_t WindowParam;
+    typedef uintptr_t WindowParam;
 
-	class Widget;
+    class Widget;
 
-	template<auto T>
-	struct Event
-	{
-		static inline constexpr auto MessageType = (WindowMessageType) T;
+    template <auto T>
+    struct Event
+    {
+        static inline constexpr auto MessageType = (WindowMessageType)T;
 
-		static bool ShouldProcess(Widget*, WindowParam, WindowParam) { return true; }
-	};
-}
+        static bool ShouldProcess(Widget *, WindowParam, WindowParam)
+        {
+            return true;
+        }
+    };
+} // namespace rewin

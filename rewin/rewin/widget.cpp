@@ -4,140 +4,143 @@
 
 namespace rewin
 {
-	bool Widget::InternalHandleEvent(WindowMessageType type, WindowParam w, WindowParam l)
-	{
-		bool handled = false;
+    bool Widget::InternalHandleEvent(WindowMessageType type, WindowParam w, WindowParam l)
+    {
+        bool handled = false;
 
-		for (auto& handler : mMsgHandlers[type])
-			handled |= handler(w, l);
+        for (auto &handler : mMsgHandlers[type])
+            handled |= handler(w, l);
 
-		for (auto& pChild : mChildren)
-			handled |= pChild->InternalHandleEvent(type, w, l);
+        for (auto &pChild : mChildren)
+            handled |= pChild->InternalHandleEvent(type, w, l);
 
-		return handled;
-	}
+        for (auto &handler : mAnyMsgHandlers)
+            handler(type, w, l);
 
-	lm::Vec2 Widget::GetAbsolutePos(const lm::Vec2& localPos) const
-	{
-		lm::Vec2 result = localPos;
+        return handled;
+    }
 
-		const Widget* pCurr = this;
+    lm::Vec2 Widget::GetAbsolutePos(const lm::Vec2 &localPos) const
+    {
+        lm::Vec2 result = localPos;
 
-		while (pCurr)
-		{
-			result += pCurr->mPos.GetCoords(pCurr->mSize.GetCoords(pCurr->GetParentSize()));
-			pCurr = pCurr->mParent;
-		};
+        const Widget *pCurr = this;
 
-		return result;
-	}
+        while (pCurr)
+        {
+            result += pCurr->mPos.GetCoords(pCurr->mSize.GetCoords(pCurr->GetParentSize()));
+            pCurr = pCurr->mParent;
+        };
 
-	uintptr_t Widget::SendWindowMessage(WindowMessageType type, WindowParam w, WindowParam l)
-	{
-		return SendMessage((HWND) mHandle, (UINT) type, w, l);
-	}
+        return result;
+    }
 
-	void Widget::SetFont(FontHandle handle)
-	{
-		if (mFont == handle)
-			return;
+    uintptr_t Widget::SendWindowMessage(WindowMessageType type, WindowParam w, WindowParam l)
+    {
+        return SendMessage((HWND)mHandle, (UINT)type, w, l);
+    }
 
-		auto oldFont = mFont;
+    void Widget::SetFont(FontHandle handle)
+    {
+        if (mFont == handle)
+            return;
 
-		mFont = handle;
+        auto oldFont = mFont;
 
-		ApplyForAll([handle, oldFont](rewin::Widget* pWidget) {
-			if (pWidget->mFont == oldFont)
-			{
-				pWidget->mFont = handle;
+        mFont = handle;
 
-				if (pWidget->GetHandle())
-					pWidget->SendWindowMessage((WindowMessageType)WM_SETFONT, (WindowParam)pWidget->mFont, true);
-			}
-		});
-	}
+        ApplyForAll([handle, oldFont](rewin::Widget *pWidget) {
+            if (pWidget->mFont == oldFont)
+            {
+                pWidget->mFont = handle;
 
-	void Widget::InternalActivate(Widget* pParent, int id)
-	{
-		mParent = pParent;
+                if (pWidget->GetHandle())
+                    pWidget->SendWindowMessage((WindowMessageType)WM_SETFONT, (WindowParam)pWidget->mFont, true);
+            }
+        });
+    }
 
-		if (mParent && mParent->mRoot)
-			mRoot = mParent->mRoot;
+    void Widget::InternalActivate(Widget *pParent, int id)
+    {
+        mParent = pParent;
 
-		if (mParent && !mFont)
-			mFont = mParent->mFont;
+        if (mParent && mParent->mRoot)
+            mRoot = mParent->mRoot;
 
-		Activate(mParent, id);
+        if (mParent && !mFont)
+            mFont = mParent->mFont;
 
-		SetEnabled(mEnabled);
-		SetVisible(mVisible);
+        Activate(mParent, id);
 
-		int i = 1;
+        SetEnabled(mEnabled);
+        SetVisible(mVisible);
 
-		for (auto& pChild : mChildren)
-			pChild->InternalActivate(this, 100 + i++);
+        int i = 1;
 
-		if (mFont)
-		{
-			ApplyForAll([this](rewin::Widget* pWidget) {
-				if (pWidget->GetHandle())
-					pWidget->SendWindowMessage((WindowMessageType)WM_SETFONT, (WindowParam)pWidget->mFont, true);
-			});
-		}
-	}
+        for (auto &pChild : mChildren)
+            pChild->InternalActivate(this, 100 + i++);
 
-	Widget* Widget::FindChild(const std::vector<std::string>& path, int skip)
-	{
-		if (skip >= path.size())
-			return nullptr;
+        if (mFont)
+        {
+            ApplyForAll([this](rewin::Widget *pWidget) {
+                if (pWidget->GetHandle())
+                    pWidget->SendWindowMessage((WindowMessageType)WM_SETFONT, (WindowParam)pWidget->mFont, true);
+            });
+        }
+    }
 
-		for (auto& pChild : mChildren)
-			if (pChild->mStringId == path[skip])
-				if (skip == path.size() - 1)
-					return pChild;
-				else
-					return pChild->FindChild(path, skip + 1);
+    Widget *Widget::FindChild(const std::vector<std::string> &path, int skip)
+    {
+        if (skip >= path.size())
+            return nullptr;
 
-		return nullptr;
-	}
+        for (auto &pChild : mChildren)
+            if (pChild->mStringId == path[skip])
+                if (skip == path.size() - 1)
+                    return pChild;
+                else
+                    return pChild->FindChild(path, skip + 1);
 
-	void Widget::SetEnabled(bool enabled, bool permanent)
-	{
-		if (permanent)
-			mEnabled = enabled;
+        return nullptr;
+    }
 
-		ApplyForAll([this, enabled](rewin::Widget* pWidget) {
-			pWidget->mRealEnabled = pWidget->mEnabled && this->mEnabled && this->mRealEnabled;
+    void Widget::SetEnabled(bool enabled, bool permanent)
+    {
+        if (permanent)
+            mEnabled = enabled;
 
-			if (pWidget->mHandle)
-				EnableWindow((HWND)pWidget->mHandle, pWidget->mRealEnabled);
+        ApplyForAll([this, enabled](rewin::Widget *pWidget) {
+            pWidget->mRealEnabled = pWidget->mEnabled && this->mEnabled && this->mRealEnabled;
 
-			if (pWidget != this)
-				pWidget->SetEnabled(this->mEnabled, false);
-		});
-	}
+            if (pWidget->mHandle)
+                EnableWindow((HWND)pWidget->mHandle, pWidget->mRealEnabled);
 
-	void Widget::SetVisible(bool visible, bool permanent)
-	{
-		if (permanent)
-			mVisible = visible;
+            if (pWidget != this)
+                pWidget->SetEnabled(this->mEnabled, false);
+        });
+    }
 
-		ApplyForAll([this, visible](rewin::Widget* pWidget) {
-			pWidget->mRealVisible = pWidget->mVisible && this->mVisible && this->mRealVisible;
+    void Widget::SetVisible(bool visible, bool permanent)
+    {
+        if (permanent)
+            mVisible = visible;
 
-			if (pWidget->mHandle)
-				ShowWindow((HWND)pWidget->mHandle, pWidget->mRealVisible);
+        ApplyForAll([this, visible](rewin::Widget *pWidget) {
+            pWidget->mRealVisible = pWidget->mVisible && this->mVisible && this->mRealVisible;
 
-			if (pWidget != this)
-				pWidget->SetVisible(pWidget->mRealVisible, false);
-		});
-	}
+            if (pWidget->mHandle)
+                ShowWindow((HWND)pWidget->mHandle, pWidget->mRealVisible);
 
-	void Widget::KillChildren()
-	{
-		for (auto& pChild : mChildren)
-			delete pChild;
+            if (pWidget != this)
+                pWidget->SetVisible(pWidget->mRealVisible, false);
+        });
+    }
 
-		mChildren.Clear();
-	}
-}
+    void Widget::KillChildren()
+    {
+        for (auto &pChild : mChildren)
+            delete pChild;
+
+        mChildren.Clear();
+    }
+} // namespace rewin

@@ -6,239 +6,266 @@
 
 #include <sstream>
 
-#include "event.h"
 #include "coords.h"
+#include "event.h"
 
 #include "font.h"
 
 namespace rewin
 {
-	typedef void* WindowHandle;
+    typedef void *WindowHandle;
 
-	typedef std::function<bool(WindowParam w, WindowParam l)> WindowMessageHandler;
+    typedef std::function<bool(WindowParam w, WindowParam l)> WindowMessageHandler;
+    typedef std::function<void(WindowMessageType type, WindowParam w, WindowParam l)> WindowAnyMessageHandler;
 
-	class Widget
-	{
-	public:
-		Widget(const Coords& pos, const Coords& size)
-			: mPos{ pos }, mSize{ size }
-		{}
+    class Widget
+    {
+    public:
+        Widget(const Coords &pos, const Coords &size) : mPos{pos}, mSize{size}
+        {
+        }
 
-		Widget(const Widget&) = default;
-		Widget(Widget&&) = default;
+        Widget(const Widget &) = default;
+        Widget(Widget &&) = default;
 
-		template<class T, class H>
-		void OnEvent(const H& handler)
-		{
-			mMsgHandlers[T::MessageType].Add([this, handler](WindowParam w, WindowParam l)
-			{
-				bool wants = T::ShouldProcess(this, w, l);
+        template <class T, class H>
+        void OnEvent(const H &handler)
+        {
+            mMsgHandlers[T::MessageType].Add([this, handler](WindowParam w, WindowParam l) {
+                bool wants = T::ShouldProcess(this, w, l);
 
-				if (wants)
-					return handler(T{ w, l });
+                if (wants)
+                    return handler(T{w, l});
 
-				return wants;
-			});
-		}
+                return wants;
+            });
+        }
 
-		template<class T, class H>
-		void OnRawEvent(T type, const H& handler)
-		{
-			mMsgHandlers[(WindowMessageType)type].Add([this, handler](WindowParam w, WindowParam l)
-			{
-				return handler(w, l);
-			});
-		}
+        template <class T, class H>
+        void OnRawEvent(T type, const H &handler)
+        {
+            mMsgHandlers[(WindowMessageType)type].Add(
+                [this, handler](WindowParam w, WindowParam l) { return handler(w, l); });
+        }
 
-		bool InternalHandleEvent(WindowMessageType type, WindowParam w, WindowParam l);
+        template <class H>
+        void OnAnyEvent(const H &handler)
+        {
+            mAnyMsgHandlers.Add(handler);
+        }
 
-		WindowHandle GetHandle() const
-		{
-			return mHandle;
-		}
+        bool InternalHandleEvent(WindowMessageType type, WindowParam w, WindowParam l);
 
-		void AdoptHandle(WindowHandle handle)
-		{
-			mHandle = handle;
-		}
+        WindowHandle GetHandle() const
+        {
+            return mHandle;
+        }
 
-		Widget* Add(Widget* pWidget)
-		{
-			pWidget->mParent = this;
-			pWidget->mRoot = this->mRoot;
+        void AdoptHandle(WindowHandle handle)
+        {
+            mHandle = handle;
+        }
 
-			mChildren.Add(pWidget);
+        Widget *Add(Widget *pWidget)
+        {
+            pWidget->mParent = this;
+            pWidget->mRoot = this->mRoot;
 
-			if (mHandle)
-				pWidget->InternalActivate(this, int(100u + mChildren.Size()));
+            mChildren.Add(pWidget);
 
-			return pWidget;
-		}
+            if (mHandle)
+                pWidget->InternalActivate(this, int(100u + mChildren.Size()));
 
-		template<class T>
-		T* Add(const T& widget)
-		{
-			T* pWidget = new T(widget);
+            return pWidget;
+        }
 
-			pWidget->mParent = this;
-			pWidget->mRoot = this->mRoot;
+        template <class T>
+        T *Add(const T &widget)
+        {
+            T *pWidget = new T(widget);
 
-			mChildren.Add(pWidget);
+            pWidget->mParent = this;
+            pWidget->mRoot = this->mRoot;
 
-			if (mHandle)
-				pWidget->InternalActivate(this, int(100u + mChildren.Size()));
+            mChildren.Add(pWidget);
 
-			return pWidget;
-		}
+            if (mHandle)
+                pWidget->InternalActivate(this, int(100u + mChildren.Size()));
 
-		lm::Vec2 GetAbsolutePos(const lm::Vec2& localPos) const;
+            return pWidget;
+        }
 
-		lm::Vec2 GetPos() const
-		{
-			return mPos.GetAnchoredCoords(GetParentSize(), GetSize());
-		}
+        lm::Vec2 GetAbsolutePos(const lm::Vec2 &localPos) const;
 
-		lm::Vec2 GetSize() const
-		{
-			return mSize.GetCoords(GetParentSize());
-		}
+        lm::Vec2 GetPos() const
+        {
+            return mPos.GetAnchoredCoords(GetParentSize(), GetSize());
+        }
 
-		lm::Vec2 GetParentSize() const
-		{
-			return mParent ? mParent->mSize.GetCoords(mParent->GetParentSize()) : lm::Vec2{ 1, 1 };
-		}
+        lm::Vec2 GetSize() const
+        {
+            return mSize.GetCoords(GetParentSize());
+        }
 
-		void SetPos(const Coords& pos)
-		{
-			mPos = pos;
-			RecalculateSize();
-		}
+        lm::Vec2 GetParentSize() const
+        {
+            return mParent ? mParent->mSize.GetCoords(mParent->GetParentSize()) : lm::Vec2{1, 1};
+        }
 
-		void SetSize(const Coords& size)
-		{
-			mSize = size;
-			RecalculateSize();
-		}
+        void SetPos(const Coords &pos)
+        {
+            mPos = pos;
+            RecalculateSize();
+        }
 
-		template<class F>
-		void ApplyForAll(const F& f)
-		{
-			f(this);
+        void SetSize(const Coords &size)
+        {
+            mSize = size;
+            RecalculateSize();
+        }
 
-			for (auto& pChild : mChildren)
-				pChild->ApplyForAll(f);
-		}
+        template <class F>
+        void ApplyForAll(const F &f)
+        {
+            f(this);
 
-		virtual void Activate(Widget* pParent, int id) {}
-		virtual void RecalculateSize() {}
+            for (auto &pChild : mChildren)
+                pChild->ApplyForAll(f);
+        }
 
-		uintptr_t SendWindowMessage(WindowMessageType type, WindowParam w, WindowParam l);
-		void SetFont(FontHandle handle);
+        virtual void Activate(Widget *pParent, int id)
+        {
+        }
+        virtual void RecalculateSize()
+        {
+        }
 
-		const std::string& GetStringId() const { return mStringId; }
-		void SetStringId(const std::string& id) { mStringId = id; }
+        uintptr_t SendWindowMessage(WindowMessageType type, WindowParam w, WindowParam l);
+        void SetFont(FontHandle handle);
 
-		template<class T>
-		T* FindChild(const std::string& path)
-		{
-			std::istringstream iss(path);
-			std::vector<std::string> tokens;
-			std::string token;
-			while (std::getline(iss, token, '.')) {
-				if (!token.empty())
-					tokens.push_back(token);
-			}
+        const std::string &GetStringId() const
+        {
+            return mStringId;
+        }
+        void SetStringId(const std::string &id)
+        {
+            mStringId = id;
+        }
 
-			return (T*)FindChild(tokens);
-		}
+        template <class T>
+        T *FindChild(const std::string &path)
+        {
+            std::istringstream iss(path);
+            std::vector<std::string> tokens;
+            std::string token;
+            while (std::getline(iss, token, '.'))
+            {
+                if (!token.empty())
+                    tokens.push_back(token);
+            }
 
-		Widget* FindChild(const std::vector<std::string>& path, int skip = 0);
+            return (T *)FindChild(tokens);
+        }
 
-		void SetEnabled(bool enabled, bool permanent = true);
-		void SetVisible(bool visible, bool permanent = true);
+        Widget *FindChild(const std::vector<std::string> &path, int skip = 0);
 
-		bool IsVisible() const { return mVisible; }
-		bool IsCurrentlyVisible() const { return mRealVisible; }
+        void SetEnabled(bool enabled, bool permanent = true);
+        void SetVisible(bool visible, bool permanent = true);
 
-		ulib::List<Widget*>& GetChildren() { return mChildren; }
-		void KillChildren();
+        bool IsVisible() const
+        {
+            return mVisible;
+        }
+        bool IsCurrentlyVisible() const
+        {
+            return mRealVisible;
+        }
 
-	protected:
-		WindowHandle mHandle = (WindowHandle)0;
-		std::unordered_map<WindowMessageType, ulib::List<WindowMessageHandler>> mMsgHandlers;
+        ulib::List<Widget *> &GetChildren()
+        {
+            return mChildren;
+        }
+        void KillChildren();
 
-		FontHandle mFont = (FontHandle)0;
+    protected:
+        WindowHandle mHandle = (WindowHandle)0;
+        std::unordered_map<WindowMessageType, ulib::List<WindowMessageHandler>> mMsgHandlers;
+        ulib::List<WindowAnyMessageHandler> mAnyMsgHandlers;
 
-		Widget* mParent = nullptr;
-		Coords mPos, mSize;
+        FontHandle mFont = (FontHandle)0;
 
-		Widget* mRoot = nullptr;
+        Widget *mParent = nullptr;
+        Coords mPos, mSize;
 
-		std::string mStringId;
+        Widget *mRoot = nullptr;
 
-		ulib::List<Widget*> mChildren;
+        std::string mStringId;
 
-		bool mEnabled = true;
-		bool mVisible = true;
+        ulib::List<Widget *> mChildren;
 
-		bool mRealEnabled = mEnabled;
-		bool mRealVisible = mVisible;
+        bool mEnabled = true;
+        bool mVisible = true;
 
-		void InternalActivate(Widget* pParent, int id);
-	};
+        bool mRealEnabled = mEnabled;
+        bool mRealVisible = mVisible;
 
+        void InternalActivate(Widget *pParent, int id);
+    };
 
-	template<class T, class D>
-	class BaseWidgetBuilder : public T
-	{
-	public:
-		using T::T;
+    template <class T, class D>
+    class BaseWidgetBuilder : public T
+    {
+    public:
+        using T::T;
 
-		D& SetFont(FontHandle handle)
-		{
-			WBThis()->SetFont(handle);
-			return *(D*)this;
-		}
+        D &SetFont(FontHandle handle)
+        {
+            WBThis()->SetFont(handle);
+            return *(D *)this;
+        }
 
-		D& SetPos(const Coords& pos)
-		{
-			WBThis()->SetPos(pos);
-			return *(D*)this;
-		}
+        D &SetPos(const Coords &pos)
+        {
+            WBThis()->SetPos(pos);
+            return *(D *)this;
+        }
 
-		D& SetSize(const Coords& size)
-		{
-			WBThis()->SetSize(size);
-			return *(D*)this;
-		}
+        D &SetSize(const Coords &size)
+        {
+            WBThis()->SetSize(size);
+            return *(D *)this;
+        }
 
-		D& SetEnabled(bool enabled)
-		{
-			WBThis()->SetEnabled(enabled);
-			return *(D*)this;
-		}
+        D &SetEnabled(bool enabled)
+        {
+            WBThis()->SetEnabled(enabled);
+            return *(D *)this;
+        }
 
-		D& SetVisible(bool visible)
-		{
-			WBThis()->SetVisible(visible);
-			return *(D*)this;
-		}
+        D &SetVisible(bool visible)
+        {
+            WBThis()->SetVisible(visible);
+            return *(D *)this;
+        }
 
-		D& SetStringId(const std::string& id)
-		{
-			WBThis()->SetStringId(id);
-			return *(D*)this;
-		}
+        D &SetStringId(const std::string &id)
+        {
+            WBThis()->SetStringId(id);
+            return *(D *)this;
+        }
 
-	protected:
-		T* WBThis() { return (T*)this; }
-	};
+    protected:
+        T *WBThis()
+        {
+            return (T *)this;
+        }
+    };
 
-	template<class T>
-	class WidgetBuilder : public BaseWidgetBuilder<T, WidgetBuilder<T>>
-	{
-	public:
-		using base_type = BaseWidgetBuilder<T, WidgetBuilder<T>>;
-		using base_type::base_type;
-	};
-}
+    template <class T>
+    class WidgetBuilder : public BaseWidgetBuilder<T, WidgetBuilder<T>>
+    {
+    public:
+        using base_type = BaseWidgetBuilder<T, WidgetBuilder<T>>;
+        using base_type::base_type;
+    };
+} // namespace rewin
